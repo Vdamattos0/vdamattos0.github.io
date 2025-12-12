@@ -1,1 +1,67 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <title>MVP – Saneamento no Brasil | Vivian Mattos</title>
+  <link rel="stylesheet" href="../style.css">
+</head>
+
+<body class="project-page">
+
+  <header class="wrap">
+    <a href="../index.html">← Voltar ao portfólio</a>
+    <h1>MVP – Análise de Saneamento no Brasil (SNIS)</h1>
+    <p class="subtitle">
+      Databricks · Apache Spark · BigQuery · Delta Lake · ESG
+    </p>
+  </header>
+
+  <main class="wrap">
+
+    <section>
+      <h2>Contexto</h2>
+      <p>
+        Este projeto foi desenvolvido no contexto da pós-graduação em Ciência de Dados
+        da PUC-Rio, com foco na análise das desigualdades regionais no acesso ao saneamento
+        básico no Brasil entre 2018 e 2022.
+      </p>
+    </section>
+
+    <section>
+      <h2>Pipeline de Dados</h2>
+      <ul>
+        <li>Coleta de dados públicos do SNIS via BigQuery</li>
+        <li>ETL e modelagem em esquema estrela no Databricks</li>
+        <li>Persistência em Delta Lake</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Modelo Analítico</h2>
+      <ul>
+        <li><strong>dim_tempo</strong> – anos</li>
+        <li><strong>dim_municipio</strong> – município e UF</li>
+        <li><strong>fato_saneamento</strong> – indicadores de água e esgoto</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Principais Resultados</h2>
+      <p>
+        Os resultados mostram fortes desigualdades regionais, com médias de atendimento
+        significativamente menores nas regiões Norte e Nordeste.
+      </p>
+    </section>
+
+    <section>
+      <h2>Repositório</h2>
+      <a href="https://github.com/vdamattos0/mvp-saneamento-snis" target="_blank">
+        Ver código no GitHub
+      </a>
+    </section>
+
+  </main>
+
+</body>
+</html>
 
