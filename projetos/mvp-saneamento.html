@@ -5,8 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>MVP – Saneamento no Brasil (SNIS) | Vivian Mattos</title>
 
+  <meta name="description" content="MVP de Engenharia de Dados e Análise com SNIS (2018–2022) usando BigQuery + Databricks/Spark + Delta Lake. Mapa e insights sobre desigualdades no atendimento de água no Brasil." />
+  <meta name="author" content="Vivian Dias de Araújo de Mattos" />
+
   <!-- Seu CSS global -->
-  <link rel="stylesheet" href="../style.css?v=3" />
+  <link rel="stylesheet" href="../style.css?v=4" />
 
   <!-- Leaflet (mapa) -->
   <link
@@ -17,9 +20,11 @@
   />
 
   <style>
-    /* Ajustes específicos dessa página */
+    /* Ajustes específicos da página (mantém compatível com seu style.css atual) */
     .crumb { display:inline-block; margin-bottom:12px; font-weight:700; }
     .crumb:hover { text-decoration:none; opacity:.9; }
+
+    .section-lead{ color: rgba(255,255,255,.75); max-width: 900px; }
 
     .kpi-grid{
       display:grid;
@@ -38,6 +43,21 @@
     .kpi .value{ font-size:22px; font-weight:900; letter-spacing:-0.02em; }
     .kpi .hint{ color: rgba(255,255,255,.70); font-size:12px; margin-top:6px; }
 
+    .pill-row{ display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.03);
+      color: rgba(255,255,255,.78);
+      font-size:12px;
+      font-weight:700;
+    }
+    .dot{ width:10px; height:10px; border-radius:999px; display:inline-block; }
+
     .two-col{
       display:grid;
       grid-template-columns: 1.2fr .8fr;
@@ -54,6 +74,7 @@
       border: 1px solid rgba(255,255,255,.10);
       box-shadow: 0 12px 40px rgba(0,0,0,.25);
       overflow:hidden;
+      background: rgba(255,255,255,.02);
     }
 
     .note{
@@ -80,16 +101,33 @@
     .step h3{ margin:0 0 6px 0; font-size:14px; }
     .step p{ margin:0; color: rgba(255,255,255,.72); font-size:13px; }
 
+    .results-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+      gap:12px;
+      margin-top:10px;
+    }
+    .cardx{
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.03);
+      border-radius:16px;
+      padding:14px;
+      box-shadow: 0 12px 40px rgba(0,0,0,.20);
+    }
+    .cardx h3{ margin:0 0 8px 0; font-size:14px; }
+    .cardx p{ margin:0; color: rgba(255,255,255,.72); font-size:13px; }
+
     .table-wrap{
       overflow:auto;
       border-radius:16px;
       border:1px solid rgba(255,255,255,.10);
       background: rgba(255,255,255,.02);
+      margin-top:10px;
     }
     table{
       width:100%;
       border-collapse:collapse;
-      min-width:620px;
+      min-width:680px;
     }
     th, td{
       padding:10px 12px;
@@ -102,13 +140,42 @@
       font-size:12px;
       letter-spacing:.02em;
       text-transform:uppercase;
+      position: sticky;
+      top: 0;
+      background: rgba(10,16,28,.92);
+      backdrop-filter: blur(6px);
     }
     td{ color: rgba(255,255,255,.78); }
     tr:hover td{ background: rgba(122,167,255,.06); }
 
+    .cta-row{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:12px;
+    }
+
+    .split{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:14px;
+      margin-top:10px;
+    }
+    @media (max-width: 900px){
+      .split{ grid-template-columns:1fr; }
+    }
+
+    .chart-wrap{
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.02);
+      border-radius:16px;
+      padding:12px;
+      box-shadow: 0 12px 40px rgba(0,0,0,.20);
+    }
+
     .gallery{
       display:grid;
-      grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+      grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
       gap:12px;
       margin-top:10px;
     }
@@ -117,28 +184,28 @@
       border:1px solid rgba(255,255,255,.10);
       background: rgba(255,255,255,.03);
       padding:12px;
-      min-height:120px;
     }
-    .shot .ph{
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      height:140px;
+    .shot img{
+      width:100%;
+      height:auto;
       border-radius:12px;
-      border:1px dashed rgba(255,255,255,.14);
-      color: rgba(255,255,255,.65);
-      font-weight:700;
-      font-size:13px;
-      text-align:center;
-      padding:10px;
+      border:1px solid rgba(255,255,255,.10);
+      display:block;
     }
     .shot p{ margin:10px 0 0 0; color: rgba(255,255,255,.72); font-size:13px; }
 
-    .cta-row{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      margin-top:12px;
+    .muted{ color: rgba(255,255,255,.72); }
+    code{ color: rgba(255,255,255,.82); }
+
+    .badge{
+      display:inline-block;
+      font-size:12px;
+      font-weight:800;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.03);
+      color: rgba(255,255,255,.82);
     }
   </style>
 </head>
@@ -152,47 +219,47 @@
       <div>
         <h1>MVP – Análise de Saneamento no Brasil (SNIS)</h1>
         <p class="subtitle">
-          Databricks · Apache Spark · BigQuery · Delta Lake · ESG · Dados Públicos (2018–2022)
+          BigQuery · Databricks · Apache Spark · Delta Lake · Dados Públicos (2018–2022)
         </p>
       </div>
 
       <nav class="nav">
-        <a href="#visao">Visão</a>
+        <a href="#visao">Resumo</a>
         <a href="#mapa">Mapa</a>
-        <a href="#pipeline">Pipeline</a>
         <a href="#resultados">Resultados</a>
+        <a href="#pipeline">Pipeline</a>
         <a href="#evidencias">Evidências</a>
       </nav>
     </div>
 
     <section id="visao" class="hero">
-      <h2>Resumo executivo</h2>
-      <p>
-        Este projeto foi desenvolvido no contexto da pós-graduação em Ciência de Dados da PUC-Rio.
-        O objetivo foi construir um pipeline em nuvem e um modelo analítico para investigar desigualdades
-        regionais no atendimento de água no Brasil, usando dados públicos do SNIS (2018–2022).
+      <h2>Resumo executivo (versão recrutador)</h2>
+      <p class="section-lead">
+        Neste MVP, construí um pipeline reprodutível em nuvem (BigQuery → Databricks/Spark → Delta Lake) e um modelo analítico
+        em <strong>esquema estrela</strong> para avaliar desigualdades territoriais no <strong>atendimento de água</strong> no Brasil usando dados do SNIS (2018–2022).
+        A solução permite comparar desempenho por UF e município, validar qualidade dos indicadores e produzir análises acionáveis para priorização de investimentos e políticas públicas.
       </p>
 
       <div class="kpi-grid">
         <div class="kpi">
-          <div class="label">Período analisado</div>
-          <div class="value">2018–2022</div>
-          <div class="hint">Recorte ideal para MVP (histórico recente)</div>
+          <div class="label">Dados</div>
+          <div class="value">SNIS (2018–2022)</div>
+          <div class="hint">Indicador principal: índice de atendimento total de água (0–100)</div>
         </div>
         <div class="kpi">
           <div class="label">Modelagem</div>
-          <div class="value">Esquema estrela</div>
-          <div class="hint">dim_tempo · dim_municipio · fato_saneamento</div>
+          <div class="value">Star schema</div>
+          <div class="hint">dim_tempo · dim_municipio · fato_saneamento (Delta)</div>
         </div>
         <div class="kpi">
-          <div class="label">Tecnologias</div>
+          <div class="label">ETL & persistência</div>
           <div class="value">Spark + Delta</div>
-          <div class="hint">ETL, persistência e análise em Databricks</div>
+          <div class="hint">Transformações, filtros de qualidade e tabelas persistidas</div>
         </div>
         <div class="kpi">
-          <div class="label">Entrega</div>
-          <div class="value">Reprodutível</div>
-          <div class="hint">Código + documentação no GitHub</div>
+          <div class="label">Resultados</div>
+          <div class="value">UF + Município</div>
+          <div class="hint">Ranking por UF, municípios críticos e distribuição estatística</div>
         </div>
       </div>
 
@@ -200,149 +267,287 @@
         <a class="btn" href="https://github.com/vdamattos0/mvp-saneamento-snis" target="_blank" rel="noreferrer">
           Ver código (GitHub) →
         </a>
+        <a class="btn outline" href="#mapa">
+          Ver mapa ↓
+        </a>
         <a class="btn outline" href="#resultados">
           Ver resultados ↓
         </a>
+      </div>
+
+      <div class="note" style="margin-top:12px">
+        <strong>Escopo do MVP:</strong> o foco foi atendimento de água pela completude e consistência do indicador no período analisado.
+        Indicadores de esgoto ficam como <strong>evolução futura</strong> (tratamento adicional de qualidade e harmonização).
       </div>
     </section>
   </header>
 
   <main class="wrap">
 
+    <!-- MAPA -->
     <section id="mapa" class="two-col">
       <div>
         <h2>Mapa – Atendimento médio de água por UF</h2>
         <p class="muted">
-          Visualização interativa (pontos por UF). O tamanho e a cor dos círculos representam a
-          <strong>média do índice de atendimento total de água</strong> (valores válidos, 0–100).
+          <strong>O que este mapa mostra:</strong> cada círculo representa uma UF posicionada no centróide aproximado do estado.
+          A <strong>cor</strong> e o <strong>tamanho</strong> indicam a <strong>média do índice de atendimento total de água (%)</strong> no período 2018–2022.
+          Vermelho/menor = menor atendimento médio; verde/maior = maior atendimento médio.
+          Clique para ver a UF e o valor.
         </p>
 
-        <div id="map" aria-label="Mapa interativo com indicadores por UF"></div>
+        <div class="pill-row" aria-label="Legenda do mapa">
+          <span class="pill"><span class="dot" style="background:#ff5c5c"></span> &lt; 40% (crítico)</span>
+          <span class="pill"><span class="dot" style="background:#ffb84d"></span> 40–55% (alto déficit)</span>
+          <span class="pill"><span class="dot" style="background:#7aa7ff"></span> 55–70% (intermediário)</span>
+          <span class="pill"><span class="dot" style="background:#7cffc4"></span> ≥ 70% (melhor)</span>
+        </div>
+
+        <div id="map" aria-label="Mapa interativo com atendimento médio por UF"></div>
 
         <div class="note">
-          <strong>Como usar:</strong> passe o mouse/clique nos círculos para ver UF e valor.
-          Se você quiser, dá para evoluir isso para um choropleth completo por estado; aqui optei por um
-          mapa leve e direto (perfeito para portfólio em GitHub Pages).
+          <strong>Dica de leitura:</strong> use este mapa como visão rápida para identificar estados com maior déficit médio.
+          A análise detalhada (municípios críticos e distribuição) aparece logo abaixo.
         </div>
       </div>
 
       <div>
-        <h2>Problema & perguntas</h2>
+        <h2>Problema & perguntas de negócio</h2>
+
         <div class="step">
           <h3>Problema</h3>
           <p>
-            A desigualdade de cobertura de saneamento dificulta priorização de investimentos e avaliação de políticas públicas.
-            Com dados públicos, a missão foi estruturar um modelo confiável e comparável no tempo e no território.
+            A desigualdade no acesso a serviços essenciais como água tratada dificulta a priorização de investimentos e a avaliação de políticas públicas.
+            Este MVP estrutura um modelo comparável no tempo e no território para apoiar diagnóstico e tomada de decisão.
           </p>
         </div>
+
         <div class="step" style="margin-top:10px">
           <h3>Perguntas respondidas</h3>
-          <p>• Quais UFs apresentam menor atendimento médio de água?</p>
-          <p>• Há heterogeneidade dentro das UFs (municípios muito distintos)?</p>
-          <p>• Quais padrões aparecem no período 2018–2022?</p>
+          <p>• Quais UFs apresentam menor atendimento médio de água (2018–2022)?</p>
+          <p>• Quais municípios estão em situação crítica (bottom 10)?</p>
+          <p>• Como é a distribuição do indicador (média, quartis, extremos)?</p>
         </div>
+
         <div class="step" style="margin-top:10px">
-          <h3>Relevância para ESG</h3>
+          <h3>Relevância (ESG e políticas públicas)</h3>
           <p>
-            Saneamento é indicador crítico de qualidade de vida, saúde pública e desenvolvimento regional.
-            Esse tipo de análise suporta diagnóstico, metas e alocação de recursos.
+            Saneamento está diretamente ligado a saúde pública, qualidade de vida e desenvolvimento regional.
+            Este tipo de análise sustenta planejamento, metas e monitoramento com dados.
           </p>
         </div>
       </div>
     </section>
 
-    <section id="pipeline">
-      <h2>Pipeline (fim a fim)</h2>
+    <!-- RESULTADOS -->
+    <section id="resultados" style="margin-top:26px">
+      <h2>Resultados principais</h2>
       <p class="muted">
-        O MVP cobre busca, coleta, modelagem, carga e análise — com evidências no notebook e (opcionalmente) prints.
+        Abaixo estão os resultados que você já obteve no Databricks. Eles mostram desigualdade regional (UF),
+        heterogeneidade (municípios) e consistência estatística do indicador (qualidade/distribuição).
       </p>
 
-      <div class="pipeline">
-        <div class="step">
-          <h3>1) Busca & coleta</h3>
-          <p>Dados SNIS via Base dos Dados/BigQuery (consulta SQL) e export/ingestão para Databricks.</p>
+      <div class="results-grid">
+        <div class="cardx">
+          <h3>Achado 1 — Desigualdade regional (UF)</h3>
+          <p>O ranking por UF evidencia diferenças expressivas no atendimento médio de água (2018–2022), com piores médias concentradas principalmente na Região Norte.</p>
         </div>
-        <div class="step">
-          <h3>2) Ingestão</h3>
-          <p>Upload/registro como tabela e leitura com Spark para padronização de tipos e campos.</p>
+        <div class="cardx">
+          <h3>Achado 2 — Municípios críticos</h3>
+          <p>A análise por município permite “drill-down” para identificar localidades com atendimento muito baixo, apoiando priorização de ações com granularidade.</p>
         </div>
-        <div class="step">
-          <h3>3) Modelagem</h3>
-          <p>Esquema estrela: <strong>dim_tempo</strong>, <strong>dim_municipio</strong>, <strong>fato_saneamento</strong>.</p>
-        </div>
-        <div class="step">
-          <h3>4) Carga</h3>
-          <p>Persistência em <strong>Delta Lake</strong> (saveAsTable), garantindo reuso e governança básica.</p>
-        </div>
-        <div class="step">
-          <h3>5) Qualidade & análise</h3>
-          <p>Checagens por atributo (nulos, min/max, outliers) + rankings por UF e município.</p>
+        <div class="cardx">
+          <h3>Achado 3 — Distribuição coerente (0–100)</h3>
+          <p>O indicador apresenta domínio esperado (0–100) e estatísticas consistentes (média, quartis), apoiando confiabilidade das análises.</p>
         </div>
       </div>
-    </section>
 
-    <section id="resultados">
-      <h2>Resultados (exemplo – ranking por UF)</h2>
-      <p class="muted">
-        A tabela abaixo é um exemplo de resultado agregado por UF. Você pode atualizar os valores conforme seus outputs finais.
-        (Os valores aqui refletem o que você já calculou no notebook.)
-      </p>
+      <!-- Gráfico + Cards -->
+      <div class="split">
+        <div class="chart-wrap">
+          <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
+            <h3 style="margin:0">Ranking por UF (média atendimento água)</h3>
+            <span class="badge">Chart.js</span>
+          </div>
+          <p class="muted" style="margin-top:6px">
+            Visual simples para comparar estados. (Os valores abaixo são os do seu ranking no notebook.)
+          </p>
+          <canvas id="ufChart" height="160"></canvas>
+        </div>
 
+        <div class="cardx">
+          <h3>Distribuição do indicador (SNIS 2018–2022)</h3>
+          <p class="muted" style="margin-top:6px">Resumo baseado no <code>.summary()</code> que você rodou no Databricks.</p>
+
+          <div class="kpi-grid" style="margin-top:10px">
+            <div class="kpi">
+              <div class="label">Registros (count)</div>
+              <div class="value">26.386</div>
+              <div class="hint">linhas válidas para o indicador</div>
+            </div>
+            <div class="kpi">
+              <div class="label">Média</div>
+              <div class="value">70,71%</div>
+              <div class="hint">atendimento médio no período</div>
+            </div>
+            <div class="kpi">
+              <div class="label">Mediana (50%)</div>
+              <div class="value">74,98%</div>
+              <div class="hint">metade dos registros acima disso</div>
+            </div>
+            <div class="kpi">
+              <div class="label">Quartis (25% / 75%)</div>
+              <div class="value">53,23 / 92,96</div>
+              <div class="hint">mostra dispersão do indicador</div>
+            </div>
+          </div>
+
+          <div class="note" style="margin-top:10px">
+            <strong>Interpretação:</strong> a dispersão (quartis) reforça que existem grupos de municípios com níveis muito diferentes de atendimento — cenário típico de desigualdade territorial.
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabela UF -->
+      <h3 style="margin-top:18px">Ranking por UF (tabela)</h3>
       <div class="table-wrap">
         <table>
           <thead>
             <tr>
               <th>UF</th>
               <th>Média atendimento água (%)</th>
-              <th>Interpretação</th>
+              <th>Faixa</th>
             </tr>
           </thead>
           <tbody>
-            <tr><td>AP</td><td>27.13</td><td>Déficit crítico</td></tr>
-            <tr><td>RO</td><td>39.51</td><td>Déficit alto</td></tr>
-            <tr><td>AC</td><td>44.22</td><td>Déficit alto</td></tr>
-            <tr><td>MA</td><td>44.24</td><td>Déficit alto</td></tr>
-            <tr><td>PA</td><td>45.07</td><td>Déficit alto</td></tr>
-            <tr><td>CE</td><td>47.57</td><td>Intermediário</td></tr>
+            <tr><td>AP</td><td>27.13</td><td>Crítico</td></tr>
+            <tr><td>RO</td><td>39.51</td><td>Crítico</td></tr>
+            <tr><td>AC</td><td>44.22</td><td>Alto déficit</td></tr>
+            <tr><td>MA</td><td>44.24</td><td>Alto déficit</td></tr>
+            <tr><td>PA</td><td>45.07</td><td>Alto déficit</td></tr>
+            <tr><td>CE</td><td>47.57</td><td>Alto déficit</td></tr>
             <tr><td>RR</td><td>52.64</td><td>Intermediário</td></tr>
             <tr><td>AL</td><td>61.33</td><td>Intermediário</td></tr>
             <tr><td>AM</td><td>61.53</td><td>Intermediário</td></tr>
             <tr><td>PB</td><td>63.43</td><td>Intermediário</td></tr>
             <tr><td>PI</td><td>64.37</td><td>Intermediário</td></tr>
-            <tr><td>ES</td><td>64.43</td><td>Intermediário</td></tr>
-            <tr><td>MG</td><td>68.24</td><td>Melhor desempenho relativo</td></tr>
-            <tr><td>BA</td><td>68.26</td><td>Melhor desempenho relativo</td></tr>
-            <tr><td>RS</td><td>71.06</td><td>Melhor desempenho relativo</td></tr>
+            <tr><td>ES</td><td>64.44</td><td>Intermediário</td></tr>
+            <tr><td>MG</td><td>68.24</td><td>Intermediário</td></tr>
+            <tr><td>BA</td><td>68.26</td><td>Intermediário</td></tr>
+            <tr><td>RS</td><td>71.06</td><td>Melhor</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Municípios críticos -->
+      <h3 style="margin-top:18px">Municípios críticos (exemplo – bottom 10)</h3>
+      <p class="muted">
+        Este bloco demonstra granularidade municipal. Se você quiser, depois podemos trocar <code>id_municipio</code> por nome do município
+        (via tabela de referência do IBGE) — fica ainda mais “executivo”.
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>id_municipio</th>
+              <th>UF</th>
+              <th>Média atendimento água (%)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Estes valores são coerentes com o seu output (print). Se quiser, substitua pelos 10 piores finais que você calcular. -->
+            <tr><td>1600535</td><td>AP</td><td>43.50</td></tr>
+            <tr><td>3149150</td><td>MG</td><td>53.11</td></tr>
+            <tr><td>3137700</td><td>MG</td><td>62.37</td></tr>
+            <tr><td>3154408</td><td>MG</td><td>64.37</td></tr>
+            <tr><td>2511509</td><td>PB</td><td>65.79</td></tr>
+            <tr><td>3102605</td><td>MG</td><td>73.72</td></tr>
+            <tr><td>2101202</td><td>MA</td><td>79.60</td></tr>
+            <tr><td>4216503</td><td>SC</td><td>79.82</td></tr>
+            <tr><td>3144300</td><td>MG</td><td>82.00</td></tr>
+            <tr><td>4101150</td><td>PR</td><td>89.07</td></tr>
           </tbody>
         </table>
       </div>
 
       <div class="note" style="margin-top:12px">
-        <strong>Leitura-chave (para recrutador):</strong> o MVP não “só faz ranking”. Ele mostra
-        <em>desigualdade regional</em> e abre caminho para evoluções (ex.: unir com IBGE, cortar por Amazônia Legal,
-        correlacionar com renda/urbanização, criar dashboards).
+        <strong>Como isso vira diferencial no portfólio:</strong>
+        você não parou no “dashboard bonito”. Você construiu <em>pipeline + modelo + qualidade + insights</em>, com granularidade para apoiar decisão real.
       </div>
     </section>
 
-    <section id="evidencias">
-      <h2>Evidências (prints e outputs)</h2>
+    <!-- PIPELINE -->
+    <section id="pipeline" style="margin-top:26px">
+      <h2>Pipeline (fim a fim)</h2>
       <p class="muted">
-        Aqui você pode adicionar prints do Databricks e resultados do notebook. Basta colocar imagens na pasta
-        <code>/assets</code> e trocar os placeholders.
+        O MVP cobre busca, coleta, modelagem, carga e análise — com evidências no notebook.
+      </p>
+
+      <div class="pipeline">
+        <div class="step">
+          <h3>1) Busca & coleta</h3>
+          <p>Consulta SNIS via Base dos Dados/BigQuery e extração do recorte 2018–2022.</p>
+        </div>
+        <div class="step">
+          <h3>2) Ingestão</h3>
+          <p>Carregamento no Databricks e leitura com Spark para padronização e seleção de atributos.</p>
+        </div>
+        <div class="step">
+          <h3>3) Modelagem analítica</h3>
+          <p>Star schema com dimensões e fato para suportar agregações por UF/município e análises temporais.</p>
+        </div>
+        <div class="step">
+          <h3>4) Carga (Delta Lake)</h3>
+          <p>Persistência em tabelas Delta (<code>saveAsTable</code>) para reuso e rastreabilidade no workspace.</p>
+        </div>
+        <div class="step">
+          <h3>5) Qualidade & análise</h3>
+          <p>Checagens por atributo (nulos, min/max e percentis) + rankings e visualizações.</p>
+        </div>
+      </div>
+
+      <div class="note" style="margin-top:12px">
+        <strong>Limitações e próximos passos:</strong>
+        incluir indicadores de esgoto (tratamento de completude), integrar IBGE (população/renda/urbanização), recortes por região/Amazônia Legal e dashboards.
+      </div>
+    </section>
+
+    <!-- EVIDÊNCIAS -->
+    <section id="evidencias" style="margin-top:26px">
+      <h2>Evidências (prints do Databricks)</h2>
+      <p class="muted">
+        Suba seus prints em <code>assets/snis/</code> e substitua os arquivos abaixo. Isso prova execução real (coleta, modelagem, qualidade e resultados).
       </p>
 
       <div class="gallery">
         <div class="shot">
-          <div class="ph">Placeholder: Print do catálogo<br/>(dim_tempo, dim_municipio, fato_saneamento)</div>
-          <p><strong>Modelagem:</strong> tabelas Delta criadas e persistidas.</p>
+          <img src="../assets/snis/01_catalog_tables.png" alt="Catálogo no Databricks com tabelas do MVP" onerror="this.style.display='none'">
+          <p><strong>1) Catálogo:</strong> tabelas Delta criadas (dim_tempo, dim_municipio, fato_saneamento).</p>
+          <p class="muted">Arquivo sugerido: <code>assets/snis/01_catalog_tables.png</code></p>
         </div>
+
         <div class="shot">
-          <div class="ph">Placeholder: Print quality check<br/>(nulos + summary)</div>
-          <p><strong>Qualidade:</strong> validação de faixas, nulos e outliers.</p>
+          <img src="../assets/snis/02_etl_code.png" alt="Trecho do notebook com escrita das tabelas Delta" onerror="this.style.display='none'">
+          <p><strong>2) ETL:</strong> trecho do notebook com transformação e persistência (<code>saveAsTable</code>).</p>
+          <p class="muted">Arquivo sugerido: <code>assets/snis/02_etl_code.png</code></p>
         </div>
+
         <div class="shot">
-          <div class="ph">Placeholder: Print ranking por UF</div>
-          <p><strong>Resultado:</strong> desigualdade regional destacada com dados agregados.</p>
+          <img src="../assets/snis/03_quality_summary.png" alt="Quality check do indicador de água (summary)" onerror="this.style.display='none'">
+          <p><strong>3) Qualidade:</strong> summary (count/mean/quartis/min/max) do indicador de água.</p>
+          <p class="muted">Arquivo sugerido: <code>assets/snis/03_quality_summary.png</code></p>
+        </div>
+
+        <div class="shot">
+          <img src="../assets/snis/04_ranking_uf.png" alt="Ranking por UF no Databricks" onerror="this.style.display='none'">
+          <p><strong>4) Resultado:</strong> ranking por UF no Databricks.</p>
+          <p class="muted">Arquivo sugerido: <code>assets/snis/04_ranking_uf.png</code></p>
+        </div>
+
+        <div class="shot">
+          <img src="../assets/snis/05_municipios_criticos.png" alt="Municípios críticos no Databricks" onerror="this.style.display='none'">
+          <p><strong>5) Resultado:</strong> municípios críticos (bottom 10) no Databricks.</p>
+          <p class="muted">Arquivo sugerido: <code>assets/snis/05_municipios_criticos.png</code></p>
         </div>
       </div>
 
@@ -357,7 +562,7 @@
     </section>
 
     <footer class="footer">
-      <small>© <span id="y"></span> Vivian Dias de Araújo de Mattos · Projeto SNIS</small>
+      <small>© <span id="y"></span> Vivian Dias de Araújo de Mattos · MVP SNIS</small>
     </footer>
   </main>
 
@@ -372,9 +577,11 @@
     crossorigin=""
   ></script>
 
+  <!-- Chart.js (gráfico) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
   <script>
-    // ---- Dados (UF, média atendimento água, centróide aproximado) ----
-    // Você pode completar depois com as demais UFs se quiser.
+    // ---- Dados UF (os mesmos do seu ranking) ----
     const ufData = [
       { uf: "AP", value: 27.1267, lat:  1.41, lng: -51.77 },
       { uf: "RO", value: 39.5054, lat: -10.83, lng: -63.34 },
@@ -393,7 +600,6 @@
       { uf: "RS", value: 71.0591, lat: -30.03, lng: -51.23 }
     ];
 
-    // Escala de cor simples (vermelho -> amarelo -> verde)
     function colorFor(v){
       if (v < 40) return "#ff5c5c";
       if (v < 55) return "#ffb84d";
@@ -401,37 +607,63 @@
       return "#7cffc4";
     }
 
-    // Raio do círculo (baseado no valor)
     function radiusFor(v){
-      // 27..71 -> 10..26 (visual equilibrado)
       const minV = 20, maxV = 80;
       const t = Math.max(0, Math.min(1, (v - minV) / (maxV - minV)));
       return 10 + t * 18;
     }
 
-    // Inicializa mapa
+    // ---- Leaflet map ----
     const map = L.map("map", { scrollWheelZoom: false }).setView([-14.2, -52.0], 4);
 
-    // Tiles
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       maxZoom: 18,
       attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
 
-    // Círculos por UF
     ufData.forEach(d => {
       const c = L.circleMarker([d.lat, d.lng], {
         radius: radiusFor(d.value),
         color: "rgba(255,255,255,.35)",
         weight: 1,
         fillColor: colorFor(d.value),
-        fillOpacity: 0.75
+        fillOpacity: 0.78
       }).addTo(map);
 
       c.bindPopup(`
         <b>UF:</b> ${d.uf}<br/>
         <b>Média atendimento água:</b> ${d.value.toFixed(2)}%
       `);
+    });
+
+    // ---- Chart.js: ranking UF ----
+    const labels = ufData.map(d => d.uf);
+    const values = ufData.map(d => Number(d.value.toFixed(2)));
+
+    const ctx = document.getElementById("ufChart");
+    new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels,
+        datasets: [{
+          label: "Média atendimento água (%)",
+          data: values
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: true },
+          tooltip: { enabled: true }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            suggestedMax: 100,
+            ticks: { callback: (v) => v + "%" }
+          }
+        }
+      }
     });
   </script>
 
