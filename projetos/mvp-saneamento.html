@@ -1,67 +1,439 @@
 <!doctype html>
 <html lang="pt-br">
 <head>
-  <meta charset="utf-8">
-  <title>MVP – Saneamento no Brasil | Vivian Mattos</title>
-  <link rel="stylesheet" href="../style.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MVP – Saneamento no Brasil (SNIS) | Vivian Mattos</title>
+
+  <!-- Seu CSS global -->
+  <link rel="stylesheet" href="../style.css?v=3" />
+
+  <!-- Leaflet (mapa) -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""
+  />
+
+  <style>
+    /* Ajustes específicos dessa página */
+    .crumb { display:inline-block; margin-bottom:12px; font-weight:700; }
+    .crumb:hover { text-decoration:none; opacity:.9; }
+
+    .kpi-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+      gap:12px;
+      margin-top:12px;
+    }
+    .kpi{
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:16px;
+      padding:14px;
+      box-shadow: 0 12px 40px rgba(0,0,0,.25);
+    }
+    .kpi .label{ color: rgba(255,255,255,.70); font-size:12px; margin-bottom:6px; }
+    .kpi .value{ font-size:22px; font-weight:900; letter-spacing:-0.02em; }
+    .kpi .hint{ color: rgba(255,255,255,.70); font-size:12px; margin-top:6px; }
+
+    .two-col{
+      display:grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap:14px;
+      align-items:stretch;
+    }
+    @media (max-width: 900px){
+      .two-col{ grid-template-columns:1fr; }
+    }
+
+    #map{
+      height: 420px;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,.10);
+      box-shadow: 0 12px 40px rgba(0,0,0,.25);
+      overflow:hidden;
+    }
+
+    .note{
+      margin-top:10px;
+      padding:12px 14px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.03);
+      color: rgba(255,255,255,.78);
+    }
+
+    .pipeline{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+      gap:10px;
+      margin-top:10px;
+    }
+    .step{
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.03);
+      border-radius:16px;
+      padding:14px;
+    }
+    .step h3{ margin:0 0 6px 0; font-size:14px; }
+    .step p{ margin:0; color: rgba(255,255,255,.72); font-size:13px; }
+
+    .table-wrap{
+      overflow:auto;
+      border-radius:16px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.02);
+    }
+    table{
+      width:100%;
+      border-collapse:collapse;
+      min-width:620px;
+    }
+    th, td{
+      padding:10px 12px;
+      border-bottom:1px solid rgba(255,255,255,.08);
+      text-align:left;
+      font-size:14px;
+    }
+    th{
+      color: rgba(255,255,255,.85);
+      font-size:12px;
+      letter-spacing:.02em;
+      text-transform:uppercase;
+    }
+    td{ color: rgba(255,255,255,.78); }
+    tr:hover td{ background: rgba(122,167,255,.06); }
+
+    .gallery{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+      gap:12px;
+      margin-top:10px;
+    }
+    .shot{
+      border-radius:16px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.03);
+      padding:12px;
+      min-height:120px;
+    }
+    .shot .ph{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      height:140px;
+      border-radius:12px;
+      border:1px dashed rgba(255,255,255,.14);
+      color: rgba(255,255,255,.65);
+      font-weight:700;
+      font-size:13px;
+      text-align:center;
+      padding:10px;
+    }
+    .shot p{ margin:10px 0 0 0; color: rgba(255,255,255,.72); font-size:13px; }
+
+    .cta-row{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:12px;
+    }
+  </style>
 </head>
 
-<body class="project-page">
+<body>
 
   <header class="wrap">
-    <a href="../index.html">← Voltar ao portfólio</a>
-    <h1>MVP – Análise de Saneamento no Brasil (SNIS)</h1>
-    <p class="subtitle">
-      Databricks · Apache Spark · BigQuery · Delta Lake · ESG
-    </p>
+    <a class="crumb" href="../index.html">← Voltar ao portfólio</a>
+
+    <div class="top">
+      <div>
+        <h1>MVP – Análise de Saneamento no Brasil (SNIS)</h1>
+        <p class="subtitle">
+          Databricks · Apache Spark · BigQuery · Delta Lake · ESG · Dados Públicos (2018–2022)
+        </p>
+      </div>
+
+      <nav class="nav">
+        <a href="#visao">Visão</a>
+        <a href="#mapa">Mapa</a>
+        <a href="#pipeline">Pipeline</a>
+        <a href="#resultados">Resultados</a>
+        <a href="#evidencias">Evidências</a>
+      </nav>
+    </div>
+
+    <section id="visao" class="hero">
+      <h2>Resumo executivo</h2>
+      <p>
+        Este projeto foi desenvolvido no contexto da pós-graduação em Ciência de Dados da PUC-Rio.
+        O objetivo foi construir um pipeline em nuvem e um modelo analítico para investigar desigualdades
+        regionais no atendimento de água no Brasil, usando dados públicos do SNIS (2018–2022).
+      </p>
+
+      <div class="kpi-grid">
+        <div class="kpi">
+          <div class="label">Período analisado</div>
+          <div class="value">2018–2022</div>
+          <div class="hint">Recorte ideal para MVP (histórico recente)</div>
+        </div>
+        <div class="kpi">
+          <div class="label">Modelagem</div>
+          <div class="value">Esquema estrela</div>
+          <div class="hint">dim_tempo · dim_municipio · fato_saneamento</div>
+        </div>
+        <div class="kpi">
+          <div class="label">Tecnologias</div>
+          <div class="value">Spark + Delta</div>
+          <div class="hint">ETL, persistência e análise em Databricks</div>
+        </div>
+        <div class="kpi">
+          <div class="label">Entrega</div>
+          <div class="value">Reprodutível</div>
+          <div class="hint">Código + documentação no GitHub</div>
+        </div>
+      </div>
+
+      <div class="cta-row">
+        <a class="btn" href="https://github.com/vdamattos0/mvp-saneamento-snis" target="_blank" rel="noreferrer">
+          Ver código (GitHub) →
+        </a>
+        <a class="btn outline" href="#resultados">
+          Ver resultados ↓
+        </a>
+      </div>
+    </section>
   </header>
 
   <main class="wrap">
 
-    <section>
-      <h2>Contexto</h2>
-      <p>
-        Este projeto foi desenvolvido no contexto da pós-graduação em Ciência de Dados
-        da PUC-Rio, com foco na análise das desigualdades regionais no acesso ao saneamento
-        básico no Brasil entre 2018 e 2022.
+    <section id="mapa" class="two-col">
+      <div>
+        <h2>Mapa – Atendimento médio de água por UF</h2>
+        <p class="muted">
+          Visualização interativa (pontos por UF). O tamanho e a cor dos círculos representam a
+          <strong>média do índice de atendimento total de água</strong> (valores válidos, 0–100).
+        </p>
+
+        <div id="map" aria-label="Mapa interativo com indicadores por UF"></div>
+
+        <div class="note">
+          <strong>Como usar:</strong> passe o mouse/clique nos círculos para ver UF e valor.
+          Se você quiser, dá para evoluir isso para um choropleth completo por estado; aqui optei por um
+          mapa leve e direto (perfeito para portfólio em GitHub Pages).
+        </div>
+      </div>
+
+      <div>
+        <h2>Problema & perguntas</h2>
+        <div class="step">
+          <h3>Problema</h3>
+          <p>
+            A desigualdade de cobertura de saneamento dificulta priorização de investimentos e avaliação de políticas públicas.
+            Com dados públicos, a missão foi estruturar um modelo confiável e comparável no tempo e no território.
+          </p>
+        </div>
+        <div class="step" style="margin-top:10px">
+          <h3>Perguntas respondidas</h3>
+          <p>• Quais UFs apresentam menor atendimento médio de água?</p>
+          <p>• Há heterogeneidade dentro das UFs (municípios muito distintos)?</p>
+          <p>• Quais padrões aparecem no período 2018–2022?</p>
+        </div>
+        <div class="step" style="margin-top:10px">
+          <h3>Relevância para ESG</h3>
+          <p>
+            Saneamento é indicador crítico de qualidade de vida, saúde pública e desenvolvimento regional.
+            Esse tipo de análise suporta diagnóstico, metas e alocação de recursos.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section id="pipeline">
+      <h2>Pipeline (fim a fim)</h2>
+      <p class="muted">
+        O MVP cobre busca, coleta, modelagem, carga e análise — com evidências no notebook e (opcionalmente) prints.
       </p>
+
+      <div class="pipeline">
+        <div class="step">
+          <h3>1) Busca & coleta</h3>
+          <p>Dados SNIS via Base dos Dados/BigQuery (consulta SQL) e export/ingestão para Databricks.</p>
+        </div>
+        <div class="step">
+          <h3>2) Ingestão</h3>
+          <p>Upload/registro como tabela e leitura com Spark para padronização de tipos e campos.</p>
+        </div>
+        <div class="step">
+          <h3>3) Modelagem</h3>
+          <p>Esquema estrela: <strong>dim_tempo</strong>, <strong>dim_municipio</strong>, <strong>fato_saneamento</strong>.</p>
+        </div>
+        <div class="step">
+          <h3>4) Carga</h3>
+          <p>Persistência em <strong>Delta Lake</strong> (saveAsTable), garantindo reuso e governança básica.</p>
+        </div>
+        <div class="step">
+          <h3>5) Qualidade & análise</h3>
+          <p>Checagens por atributo (nulos, min/max, outliers) + rankings por UF e município.</p>
+        </div>
+      </div>
     </section>
 
-    <section>
-      <h2>Pipeline de Dados</h2>
-      <ul>
-        <li>Coleta de dados públicos do SNIS via BigQuery</li>
-        <li>ETL e modelagem em esquema estrela no Databricks</li>
-        <li>Persistência em Delta Lake</li>
-      </ul>
-    </section>
-
-    <section>
-      <h2>Modelo Analítico</h2>
-      <ul>
-        <li><strong>dim_tempo</strong> – anos</li>
-        <li><strong>dim_municipio</strong> – município e UF</li>
-        <li><strong>fato_saneamento</strong> – indicadores de água e esgoto</li>
-      </ul>
-    </section>
-
-    <section>
-      <h2>Principais Resultados</h2>
-      <p>
-        Os resultados mostram fortes desigualdades regionais, com médias de atendimento
-        significativamente menores nas regiões Norte e Nordeste.
+    <section id="resultados">
+      <h2>Resultados (exemplo – ranking por UF)</h2>
+      <p class="muted">
+        A tabela abaixo é um exemplo de resultado agregado por UF. Você pode atualizar os valores conforme seus outputs finais.
+        (Os valores aqui refletem o que você já calculou no notebook.)
       </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>UF</th>
+              <th>Média atendimento água (%)</th>
+              <th>Interpretação</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>AP</td><td>27.13</td><td>Déficit crítico</td></tr>
+            <tr><td>RO</td><td>39.51</td><td>Déficit alto</td></tr>
+            <tr><td>AC</td><td>44.22</td><td>Déficit alto</td></tr>
+            <tr><td>MA</td><td>44.24</td><td>Déficit alto</td></tr>
+            <tr><td>PA</td><td>45.07</td><td>Déficit alto</td></tr>
+            <tr><td>CE</td><td>47.57</td><td>Intermediário</td></tr>
+            <tr><td>RR</td><td>52.64</td><td>Intermediário</td></tr>
+            <tr><td>AL</td><td>61.33</td><td>Intermediário</td></tr>
+            <tr><td>AM</td><td>61.53</td><td>Intermediário</td></tr>
+            <tr><td>PB</td><td>63.43</td><td>Intermediário</td></tr>
+            <tr><td>PI</td><td>64.37</td><td>Intermediário</td></tr>
+            <tr><td>ES</td><td>64.43</td><td>Intermediário</td></tr>
+            <tr><td>MG</td><td>68.24</td><td>Melhor desempenho relativo</td></tr>
+            <tr><td>BA</td><td>68.26</td><td>Melhor desempenho relativo</td></tr>
+            <tr><td>RS</td><td>71.06</td><td>Melhor desempenho relativo</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="note" style="margin-top:12px">
+        <strong>Leitura-chave (para recrutador):</strong> o MVP não “só faz ranking”. Ele mostra
+        <em>desigualdade regional</em> e abre caminho para evoluções (ex.: unir com IBGE, cortar por Amazônia Legal,
+        correlacionar com renda/urbanização, criar dashboards).
+      </div>
     </section>
 
-    <section>
-      <h2>Repositório</h2>
-      <a href="https://github.com/vdamattos0/mvp-saneamento-snis" target="_blank">
-        Ver código no GitHub
-      </a>
+    <section id="evidencias">
+      <h2>Evidências (prints e outputs)</h2>
+      <p class="muted">
+        Aqui você pode adicionar prints do Databricks e resultados do notebook. Basta colocar imagens na pasta
+        <code>/assets</code> e trocar os placeholders.
+      </p>
+
+      <div class="gallery">
+        <div class="shot">
+          <div class="ph">Placeholder: Print do catálogo<br/>(dim_tempo, dim_municipio, fato_saneamento)</div>
+          <p><strong>Modelagem:</strong> tabelas Delta criadas e persistidas.</p>
+        </div>
+        <div class="shot">
+          <div class="ph">Placeholder: Print quality check<br/>(nulos + summary)</div>
+          <p><strong>Qualidade:</strong> validação de faixas, nulos e outliers.</p>
+        </div>
+        <div class="shot">
+          <div class="ph">Placeholder: Print ranking por UF</div>
+          <p><strong>Resultado:</strong> desigualdade regional destacada com dados agregados.</p>
+        </div>
+      </div>
+
+      <div class="cta-row" style="margin-top:14px">
+        <a class="btn" href="https://github.com/vdamattos0/mvp-saneamento-snis" target="_blank" rel="noreferrer">
+          Abrir repositório do MVP →
+        </a>
+        <a class="btn outline" href="../index.html">
+          Voltar ao portfólio
+        </a>
+      </div>
     </section>
 
+    <footer class="footer">
+      <small>© <span id="y"></span> Vivian Dias de Araújo de Mattos · Projeto SNIS</small>
+    </footer>
   </main>
+
+  <script>
+    document.getElementById("y").textContent = new Date().getFullYear();
+  </script>
+
+  <!-- Leaflet JS -->
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""
+  ></script>
+
+  <script>
+    // ---- Dados (UF, média atendimento água, centróide aproximado) ----
+    // Você pode completar depois com as demais UFs se quiser.
+    const ufData = [
+      { uf: "AP", value: 27.1267, lat:  1.41, lng: -51.77 },
+      { uf: "RO", value: 39.5054, lat: -10.83, lng: -63.34 },
+      { uf: "AC", value: 44.2180, lat: -9.97, lng: -67.81 },
+      { uf: "MA", value: 44.2379, lat: -5.42, lng: -45.44 },
+      { uf: "PA", value: 45.0746, lat: -3.79, lng: -52.48 },
+      { uf: "CE", value: 47.5659, lat: -5.20, lng: -39.53 },
+      { uf: "RR", value: 52.6424, lat:  1.89, lng: -61.22 },
+      { uf: "AL", value: 61.3296, lat: -9.62, lng: -36.82 },
+      { uf: "AM", value: 61.5262, lat: -3.42, lng: -64.70 },
+      { uf: "PB", value: 63.4283, lat: -7.12, lng: -36.72 },
+      { uf: "PI", value: 64.3730, lat: -7.10, lng: -42.80 },
+      { uf: "ES", value: 64.4378, lat: -19.19, lng: -40.34 },
+      { uf: "MG", value: 68.2436, lat: -18.50, lng: -44.56 },
+      { uf: "BA", value: 68.2648, lat: -12.96, lng: -41.67 },
+      { uf: "RS", value: 71.0591, lat: -30.03, lng: -51.23 }
+    ];
+
+    // Escala de cor simples (vermelho -> amarelo -> verde)
+    function colorFor(v){
+      if (v < 40) return "#ff5c5c";
+      if (v < 55) return "#ffb84d";
+      if (v < 70) return "#7aa7ff";
+      return "#7cffc4";
+    }
+
+    // Raio do círculo (baseado no valor)
+    function radiusFor(v){
+      // 27..71 -> 10..26 (visual equilibrado)
+      const minV = 20, maxV = 80;
+      const t = Math.max(0, Math.min(1, (v - minV) / (maxV - minV)));
+      return 10 + t * 18;
+    }
+
+    // Inicializa mapa
+    const map = L.map("map", { scrollWheelZoom: false }).setView([-14.2, -52.0], 4);
+
+    // Tiles
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 18,
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Círculos por UF
+    ufData.forEach(d => {
+      const c = L.circleMarker([d.lat, d.lng], {
+        radius: radiusFor(d.value),
+        color: "rgba(255,255,255,.35)",
+        weight: 1,
+        fillColor: colorFor(d.value),
+        fillOpacity: 0.75
+      }).addTo(map);
+
+      c.bindPopup(`
+        <b>UF:</b> ${d.uf}<br/>
+        <b>Média atendimento água:</b> ${d.value.toFixed(2)}%
+      `);
+    });
+  </script>
 
 </body>
 </html>
-
